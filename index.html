@@ -1,85 +1,22 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <title>Postura con TinyPose</title>
-  <style>
-    body { margin: 0; overflow: hidden; }
-    canvas, video {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100vw;
-      height: 100vh;
-      object-fit: cover;
-      transform: scaleX(-1);
-    }
-  </style>
+  <title>TinyPose Web</title>
 </head>
 <body>
-  <video id="video" autoplay muted playsinline></video>
-  <canvas id="canvas"></canvas>
+  <h1>Bienvenido a TinyPose</h1>
+  <button onclick="checkPose()">Verificar postura</button>
 
-  <script type="module">
-    import {
-      FilesetResolver,
-      PoseLandmarker,
-      DrawingUtils
-    } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/vision_bundle.mjs";
-
-    const video = document.getElementById("video");
-    const canvas = document.getElementById("canvas");
-    const ctx = canvas.getContext("2d");
-    const drawingUtils = new DrawingUtils(ctx);
-
-    let poseLandmarker;
-
-    async function setup() {
-      const vision = await FilesetResolver.forVisionTasks(
-        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm"
-      );
-
-      poseLandmarker = await PoseLandmarker.createFromOptions(vision, {
-        baseOptions: {
-          modelAssetPath:
-            "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/pose_landmarker_lite.task",
-        },
-        runningMode: "video",
-        numPoses: 1,
+  <script>
+    async function checkPose() {
+      const response = await fetch('https://TUSERVICIO.onrender.com/detect', {
+        method: 'POST',
+        body: JSON.stringify({ /* tus datos */ }),
+        headers: { 'Content-Type': 'application/json' }
       });
-
-      await setupCamera();
-      requestAnimationFrame(processFrame);
+      const result = await response.json();
+      alert("Resultado: " + JSON.stringify(result));
     }
-
-    async function setupCamera() {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: 640, height: 480 },
-        audio: false
-      });
-      video.srcObject = stream;
-      await new Promise((res) => (video.onloadedmetadata = res));
-    }
-
-    function processFrame() {
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-
-      if (poseLandmarker) {
-        poseLandmarker.detectForVideo(video, performance.now(), (result) => {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          if (result.landmarks && result.landmarks.length > 0) {
-            for (const landmark of result.landmarks[0]) {
-              drawingUtils.drawLandmarks([landmark]);
-            }
-            drawingUtils.drawConnectors(result.landmarks[0], PoseLandmarker.POSE_CONNECTIONS);
-          }
-        });
-      }
-
-      requestAnimationFrame(processFrame);
-    }
-
-    setup();
   </script>
 </body>
 </html>
