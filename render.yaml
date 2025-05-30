@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: esp32-stream-server
+    env: python
+    plan: free
+    buildCommand: ""
+    startCommand: gunicorn main:app
