@@ -13,7 +13,7 @@ def status():
     global last_ping
     connected = False
     # Verifica si el último ping fue hace menos de 30 segundos
-    if last_ping and (datetime.utcnow() - last_ping) < timedelta(seconds=30):
+    if last_ping and (datetime.utcnow() - last_ping) < timedelta(seconds=4):
         connected = True
     return jsonify({"connected": connected})
 
