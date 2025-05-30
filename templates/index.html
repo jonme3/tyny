@@ -27,6 +27,7 @@
       color: #f44336;
       box-shadow: 0 0 8px #f4433699;
       transition: all 0.3s ease;
+      text-align: center;
     }
     #status.connected {
       border-color: #4CAF50;
@@ -38,17 +39,27 @@
       border-radius: 8px;
       box-shadow: 0 0 12px #000;
     }
+    #lastPing {
+      font-size: 0.9em;
+      margin-top: 0.3em;
+      color: #ccc;
+    }
   </style>
 </head>
 <body>
   <h1>Video en vivo</h1>
-  <div id="status">Estado ESP32: Desconectado ❌</div>
+  <div id="status">Estado ESP32: Desconectado ❌
+    <div id="lastPing">Último ping: -- s atrás</div>
+  </div>
   <img id="stream" src="" width="640" alt="Stream de video" />
 
   <script>
-    const streamUrl = "/frame";  // Usa ruta relativa para evitar problemas CORS
+    const streamUrl = "/frame";  // ruta relativa para evitar CORS
     const statusDiv = document.getElementById("status");
+    const lastPingDiv = document.getElementById("lastPing");
     const img = document.getElementById("stream");
+
+    let lastPingTimestamp = null;
 
     // Actualiza el video cada 100ms (10 FPS)
     setInterval(() => {
@@ -65,15 +76,32 @@
         if (data.connected) {
           statusDiv.textContent = "Estado ESP32: Conectado ✅";
           statusDiv.classList.add("connected");
+          lastPingTimestamp = Date.now();
+          lastPingDiv.textContent = "Último ping: 0 s atrás";
+          statusDiv.appendChild(lastPingDiv);
         } else {
           statusDiv.textContent = "Estado ESP32: Desconectado ❌";
           statusDiv.classList.remove("connected");
+          lastPingTimestamp = null;
+          lastPingDiv.textContent = "Último ping: -- s atrás";
+          statusDiv.appendChild(lastPingDiv);
         }
       } catch (e) {
         statusDiv.textContent = "Estado ESP32: Error al consultar";
         statusDiv.classList.remove("connected");
+        lastPingTimestamp = null;
+        lastPingDiv.textContent = "Último ping: -- s atrás";
+        statusDiv.appendChild(lastPingDiv);
       }
     }
+
+    // Actualiza contador segundos desde último ping
+    setInterval(() => {
+      if (lastPingTimestamp) {
+        const diff = Math.floor((Date.now() - lastPingTimestamp) / 1000);
+        lastPingDiv.textContent = `Último ping: ${diff} s atrás`;
+      }
+    }, 1000);
 
     // Consultar estado cada 10 segundos
     checkStatus();
