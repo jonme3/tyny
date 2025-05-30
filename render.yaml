@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: esp32-stream-server
+    name: tyny
     env: python
     plan: free
     buildCommand: ""
