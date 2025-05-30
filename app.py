@@ -1,10 +1,3 @@
-from flask import Flask, jsonify, Response
-from datetime import datetime, timedelta
-
-app = Flask(__name__)
-last_ping = None
-
-# Ruta que sirve la página HTML con el video y el estado
 @app.route("/")
 def index():
     html = """
@@ -91,3 +84,5 @@ def index():
   </script>
 </body>
 </html>
+    """
+    return Response(html, mimetype="text/html")
