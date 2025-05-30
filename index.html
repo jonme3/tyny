@@ -1,22 +1,19 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>TinyPose Web</title>
+  <meta charset="UTF-8">
+  <title>Video ESP32-S3</title>
 </head>
 <body>
-  <h1>Bienvenido a TinyPose</h1>
-  <button onclick="checkPose()">Verificar postura</button>
-
+  <h1>Video en vivo</h1>
+  <img id="stream" src="" width="640">
   <script>
-    async function checkPose() {
-      const response = await fetch('https://TUSERVICIO.onrender.com/detect', {
-        method: 'POST',
-        body: JSON.stringify({ /* tus datos */ }),
-        headers: { 'Content-Type': 'application/json' }
-      });
-      const result = await response.json();
-      alert("Resultado: " + JSON.stringify(result));
-    }
+    const url = "https://esp32-video.onrender.com/frame";
+    const img = document.getElementById("stream");
+
+    setInterval(() => {
+      img.src = url + "?t=" + Date.now(); // evitar caché
+    }, 100); // 10 FPS
   </script>
 </body>
 </html>
