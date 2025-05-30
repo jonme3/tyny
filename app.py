@@ -2,21 +2,15 @@ from flask import Flask, jsonify
 from datetime import datetime, timedelta
 
 app = Flask(__name__)
-
-# Variable global para guardar la última vez que el ESP32 hizo ping
 last_ping = None
 
-@app.route("/")
-def home():
+@app.route("/status")
+def status():
     global last_ping
     connected = False
     if last_ping and (datetime.utcnow() - last_ping) < timedelta(seconds=30):
         connected = True
-    status = "Conectado ✅" if connected else "Desconectado ❌"
-    return f"""
-        <h1>Servidor de video ESP32-S3</h1>
-        <p>Estado ESP32: <strong>{status}</strong></p>
-    """
+    return jsonify({"connected": connected})
 
 @app.route("/ping")
 def ping():
