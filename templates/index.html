@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-  <title>ESP32-CAM Viewer</title>
-  <meta http-equiv="refresh" content="2">
+  <meta charset="UTF-8" />
+  <title>Video Stream ESP32</title>
   <style>
-    body { font-family: sans-serif; text-align: center; }
-    img { max-width: 100%; height: auto; border: 2px solid #333; }
+    body { display: flex; justify-content: center; align-items: center; height: 100vh; background: #222; }
+    img { max-width: 90vw; max-height: 90vh; border: 2px solid #fff; }
   </style>
 </head>
 <body>
-  <h1>Última imagen recibida</h1>
-  <img src="{{ image_url }}" alt="Última imagen del ESP32-CAM">
+  <img src="https://tu-backend.onrender.com/video_feed" alt="Stream ESP32" />
 </body>
 </html>
+
