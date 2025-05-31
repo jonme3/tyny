@@ -33,12 +33,16 @@ def upload():
 def video_feed():
     return Response(
         mjpeg_generator(),
-        mimetype="multipart/x-mixed-replace; boundary=--frame"
+        mimetype="multipart/x-mixed-replace; boundary=--frame",
+        headers={
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "Pragma": "no-cache",
+            "Expires": "0"
+        }
     )
 
 @app.route("/")
 def index():
-    # Aquí carga tu HTML con <img src="/video_feed">
     return render_template("index.html")
 
 if __name__ == "__main__":
