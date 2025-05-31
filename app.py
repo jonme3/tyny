@@ -29,7 +29,7 @@ def ping():
     print(f"🔁 Ping recibido: {last_ping}")
     return jsonify({"status": "ok"})
 
-@app.route("/upload", methods=["POST"])
+@app.route("/upload", methods=["POST"], strict_slashes=False)
 def upload():
     if "image" not in request.files:
         return jsonify({"error": "No se envió imagen"}), 400
