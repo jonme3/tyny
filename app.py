@@ -13,9 +13,13 @@ def mjpeg_generator():
         if os.path.exists(image_path):
             with open(image_path, "rb") as img_file:
                 frame = img_file.read()
+            # Aquí envío cada frame con su boundary y headers
             yield (b"%s\r\nContent-Type: image/jpeg\r\nContent-Length: %d\r\n\r\n" % (boundary.encode(), len(frame)))
             yield frame
             yield b"\r\n"
+        else:
+            # Si no hay imagen, envío un frame vacío para mantener la conexión
+            yield (b"%s\r\nContent-Type: text/plain\r\n\r\nNo image\r\n" % boundary.encode())
         time.sleep(0.03)  # ~30fps
 
 @app.route("/upload", methods=["POST"])
