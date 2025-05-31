@@ -1,111 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>Video ESP32-S3</title>
+  <title>ESP32-CAM Viewer</title>
+  <meta http-equiv="refresh" content="2">
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #121212;
-      color: #eee;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 1em;
-    }
-    h1 {
-      margin-bottom: 0.5em;
-    }
-    #status {
-      font-size: 1.5em;
-      font-weight: bold;
-      padding: 0.4em 0.8em;
-      border-radius: 8px;
-      margin-bottom: 1em;
-      user-select: none;
-      border: 2px solid #f44336;
-      color: #f44336;
-      box-shadow: 0 0 8px #f4433699;
-      transition: all 0.3s ease;
-      text-align: center;
-    }
-    #status.connected {
-      border-color: #4CAF50;
-      color: #4CAF50;
-      box-shadow: 0 0 8px #4CAF5099;
-    }
-    img {
-      max-width: 100%;
-      border-radius: 8px;
-      box-shadow: 0 0 12px #000;
-    }
-    #lastPing {
-      font-size: 0.9em;
-      margin-top: 0.3em;
-      color: #ccc;
-    }
+    body { font-family: sans-serif; text-align: center; }
+    img { max-width: 100%; height: auto; border: 2px solid #333; }
   </style>
 </head>
 <body>
-  <h1>Video en vivo</h1>
-  <div id="status">Estado ESP32: Desconectado ❌
-    <div id="lastPing">Último ping: -- s atrás</div>
-  </div>
-  <img id="stream" src="" width="640" alt="Stream de video" />
-
-  <script>
-    const streamUrl = "/frame";  // ruta relativa para evitar CORS
-    const statusDiv = document.getElementById("status");
-    const lastPingDiv = document.getElementById("lastPing");
-    const img = document.getElementById("stream");
-
-    let lastPingTimestamp = null;
-
-    // Actualiza el video cada 100ms (10 FPS)
-    setInterval(() => {
-      img.src = streamUrl + "?t=" + Date.now();
-    }, 100);
-
-    // Función para consultar estado de conexión ESP32
-    async function checkStatus() {
-      try {
-        const resp = await fetch("/status");
-        if (!resp.ok) throw new Error("Error en la respuesta");
-        const data = await resp.json();
-
-        if (data.connected) {
-          statusDiv.textContent = "Estado ESP32: Conectado ✅";
-          statusDiv.classList.add("connected");
-          lastPingTimestamp = Date.now();
-          lastPingDiv.textContent = "Último ping: 0 s atrás";
-          statusDiv.appendChild(lastPingDiv);
-        } else {
-          statusDiv.textContent = "Estado ESP32: Desconectado ❌";
-          statusDiv.classList.remove("connected");
-          lastPingTimestamp = null;
-          lastPingDiv.textContent = "Último ping: -- s atrás";
-          statusDiv.appendChild(lastPingDiv);
-        }
-      } catch (e) {
-        statusDiv.textContent = "Estado ESP32: Error al consultar";
-        statusDiv.classList.remove("connected");
-        lastPingTimestamp = null;
-        lastPingDiv.textContent = "Último ping: -- s atrás";
-        statusDiv.appendChild(lastPingDiv);
-      }
-    }
-
-    // Actualiza contador segundos desde último ping
-    setInterval(() => {
-      if (lastPingTimestamp) {
-        const diff = Math.floor((Date.now() - lastPingTimestamp) / 1000);
-        lastPingDiv.textContent = `Último ping: ${diff} s atrás`;
-      }
-    }, 1000);
-
-    // Consultar estado cada 10 segundos
-    checkStatus();
-    setInterval(checkStatus, 10000);
-  </script>
+  <h1>Última imagen recibida</h1>
+  <img src="{{ image_url }}" alt="Última imagen del ESP32-CAM">
 </body>
 </html>
