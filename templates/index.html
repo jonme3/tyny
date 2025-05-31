@@ -4,8 +4,20 @@
   <meta charset="UTF-8" />
   <title>Video Stream ESP32</title>
   <style>
-    body { display: flex; justify-content: center; align-items: center; height: 100vh; background: #222; }
-    img { max-width: 90vw; max-height: 90vh; border: 2px solid #fff; }
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #222;
+      margin: 0;
+    }
+    img {
+      max-width: 90vw;
+      max-height: 90vh;
+      border: 2px solid #fff;
+      image-rendering: pixelated; /* opcional para mejor visual en baja resolución */
+    }
   </style>
 </head>
 <body>
