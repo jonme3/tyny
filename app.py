@@ -1,4 +1,4 @@
-from flask import Flask, Response, render_template
+from flask import Flask, Response, render_template, request
 import time
 import os
 
@@ -16,7 +16,18 @@ def mjpeg_generator():
             yield (b"%s\r\nContent-Type: image/jpeg\r\nContent-Length: %d\r\n\r\n" % (boundary.encode(), len(frame)))
             yield frame
             yield b"\r\n"
-        time.sleep(0.1)  # 10 fps
+        time.sleep(0.03)  # ~30fps
+
+@app.route("/upload", methods=["POST"])
+def upload():
+    if request.data:
+        image_path = os.path.join(UPLOAD_FOLDER, IMAGE_FILENAME)
+        with open(image_path, "wb") as f:
+            f.write(request.data)
+        print(f"📷 Imagen guardada en {image_path}")
+        return "OK", 200
+    else:
+        return "No image data", 400
 
 @app.route("/video_feed")
 def video_feed():
@@ -27,7 +38,7 @@ def video_feed():
 
 @app.route("/")
 def index():
-    # Página con un <img> apuntando a /video_feed
+    # Aquí carga tu HTML con <img src="/video_feed">
     return render_template("index.html")
 
 if __name__ == "__main__":
