@@ -1,27 +1,24 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <title>Video Stream ESP32</title>
+  <meta charset="UTF-8">
+  <title>ESP32-CAM MJPEG Stream</title>
   <style>
     body {
+      background-color: #111;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
-      background: #222;
-      margin: 0;
     }
     img {
+      border: 4px solid white;
       max-width: 90vw;
       max-height: 90vh;
-      border: 2px solid #fff;
-      image-rendering: pixelated;
     }
   </style>
 </head>
 <body>
-  <!-- Aquí está el stream MJPEG -->
-  <img src="/video_feed" alt="Stream ESP32" />
+  <img src="/video_feed" alt="MJPEG Stream desde ESP32">
 </body>
 </html>
