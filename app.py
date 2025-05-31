@@ -1,8 +1,12 @@
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, render_template, request, Response, stream_with_context
+from flask_cors import CORS
 from datetime import datetime, timedelta
 import os
+import time
 
 app = Flask(__name__)
+CORS(app)  # Permite CORS para todas las rutas
+
 UPLOAD_FOLDER = "static"
 IMAGE_FILENAME = "latest.jpg"
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
@@ -11,7 +15,6 @@ last_ping = None
 
 @app.route("/")
 def index():
-    # Evita caching con timestamp
     return render_template("index.html", image_url=f"/static/{IMAGE_FILENAME}?t={datetime.utcnow().timestamp()}")
 
 @app.route("/status")
@@ -31,23 +34,40 @@ def ping():
 
 @app.route("/upload", methods=["POST"], strict_slashes=False)
 def upload():
-    # En este caso ESP32 manda la imagen como raw bytes en el body
-    image_data = request.data  # lee el contenido binario
+    if "image" not in request.files:
+        return jsonify({"error": "No se envió imagen"}), 400
+    
+    image = request.files["image"]
+    if image.filename == "":
+        return jsonify({"error": "Nombre de archivo vacío"}), 400
 
-    if not image_data:
-        return jsonify({"error": "No se recibió imagen"}), 400
-
-    # Asegura que carpeta existe
     if not os.path.exists(app.config["UPLOAD_FOLDER"]):
         os.makedirs(app.config["UPLOAD_FOLDER"])
 
     save_path = os.path.join(app.config["UPLOAD_FOLDER"], IMAGE_FILENAME)
-    with open(save_path, "wb") as f:
-        f.write(image_data)
-
+    image.save(save_path)
     print(f"📷 Imagen guardada en {save_path}")
-    print(f"¿Archivo existe después de guardar? {os.path.isfile(save_path)}")
     return jsonify({"status": "imagen recibida"}), 200
+
+def generate_mjpeg():
+    while True:
+        img_path = os.path.join(app.config["UPLOAD_FOLDER"], IMAGE_FILENAME)
+        if os.path.exists(img_path):
+            with open(img_path, "rb") as f:
+                img = f.read()
+            frame = (b"--frame\r\n"
+                     b"Content-Type: image/jpeg\r\n\r\n" + img + b"\r\n")
+            yield frame
+        else:
+            # Imagen no disponible, espera un poco
+            time.sleep(0.1)
+            continue
+        time.sleep(0.033)  # Aproximadamente 30fps
+
+@app.route("/video_feed")
+def video_feed():
+    return Response(stream_with_context(generate_mjpeg()),
+                    mimetype="multipart/x-mixed-replace; boundary=frame")
 
 @app.route("/list_static")
 def list_static():
