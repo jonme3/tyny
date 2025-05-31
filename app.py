@@ -45,4 +45,16 @@ def upload():
     save_path = os.path.join(app.config["UPLOAD_FOLDER"], IMAGE_FILENAME)
     image.save(save_path)
     print(f"📷 Imagen guardada en {save_path}")
+    print(f"¿Archivo existe después de guardar? {os.path.isfile(save_path)}")
     return jsonify({"status": "imagen recibida"}), 200
+
+@app.route("/list_static")
+def list_static():
+    if not os.path.exists(app.config["UPLOAD_FOLDER"]):
+        return jsonify({"error": "Carpeta static no existe"})
+    files = os.listdir(app.config["UPLOAD_FOLDER"])
+    print(f"Archivos en static/: {files}")
+    return jsonify(files)
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=True)
