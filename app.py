@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, render_template, request, send_from_directory
+from flask import Flask, jsonify, render_template, request
 from datetime import datetime, timedelta
 import os
 
@@ -11,6 +11,7 @@ last_ping = None
 
 @app.route("/")
 def index():
+    # Evita caching con timestamp
     return render_template("index.html", image_url=f"/static/{IMAGE_FILENAME}?t={datetime.utcnow().timestamp()}")
 
 @app.route("/status")
@@ -32,9 +33,15 @@ def ping():
 def upload():
     if "image" not in request.files:
         return jsonify({"error": "No se envió imagen"}), 400
+    
     image = request.files["image"]
     if image.filename == "":
         return jsonify({"error": "Nombre de archivo vacío"}), 400
+
+    # Asegura que carpeta existe
+    if not os.path.exists(app.config["UPLOAD_FOLDER"]):
+        os.makedirs(app.config["UPLOAD_FOLDER"])
+
     save_path = os.path.join(app.config["UPLOAD_FOLDER"], IMAGE_FILENAME)
     image.save(save_path)
     print(f"📷 Imagen guardada en {save_path}")
