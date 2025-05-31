@@ -31,19 +31,20 @@ def ping():
 
 @app.route("/upload", methods=["POST"], strict_slashes=False)
 def upload():
-    if "image" not in request.files:
-        return jsonify({"error": "No se envió imagen"}), 400
-    
-    image = request.files["image"]
-    if image.filename == "":
-        return jsonify({"error": "Nombre de archivo vacío"}), 400
+    # En este caso ESP32 manda la imagen como raw bytes en el body
+    image_data = request.data  # lee el contenido binario
+
+    if not image_data:
+        return jsonify({"error": "No se recibió imagen"}), 400
 
     # Asegura que carpeta existe
     if not os.path.exists(app.config["UPLOAD_FOLDER"]):
         os.makedirs(app.config["UPLOAD_FOLDER"])
 
     save_path = os.path.join(app.config["UPLOAD_FOLDER"], IMAGE_FILENAME)
-    image.save(save_path)
+    with open(save_path, "wb") as f:
+        f.write(image_data)
+
     print(f"📷 Imagen guardada en {save_path}")
     print(f"¿Archivo existe después de guardar? {os.path.isfile(save_path)}")
     return jsonify({"status": "imagen recibida"}), 200
