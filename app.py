@@ -5,22 +5,21 @@ import os
 app = Flask(__name__)
 UPLOAD_FOLDER = "static"
 IMAGE_FILENAME = "latest.jpg"
+last_mtime = 0  # Marca de tiempo de la última imagen
 
 def mjpeg_generator():
-    boundary = "--frame"
+    global last_mtime
     while True:
         image_path = os.path.join(UPLOAD_FOLDER, IMAGE_FILENAME)
         if os.path.exists(image_path):
-            with open(image_path, "rb") as img_file:
-                frame = img_file.read()
-            # Aquí envío cada frame con su boundary y headers
-            yield (b"%s\r\nContent-Type: image/jpeg\r\nContent-Length: %d\r\n\r\n" % (boundary.encode(), len(frame)))
-            yield frame
-            yield b"\r\n"
-        else:
-            # Si no hay imagen, envío un frame vacío para mantener la conexión
-            yield (b"%s\r\nContent-Type: text/plain\r\n\r\nNo image\r\n" % boundary.encode())
-        time.sleep(0.03)  # ~30fps
+            mtime = os.path.getmtime(image_path)
+            if mtime != last_mtime:
+                last_mtime = mtime
+                with open(image_path, "rb") as img_file:
+                    frame = img_file.read()
+                yield (b"--frame\r\n"
+                       b"Content-Type: image/jpeg\r\n\r\n" + frame + b"\r\n")
+        time.sleep(0.01)  # Revisa frecuentemente para baja latencia
 
 @app.route("/upload", methods=["POST"])
 def upload():
@@ -28,21 +27,14 @@ def upload():
         image_path = os.path.join(UPLOAD_FOLDER, IMAGE_FILENAME)
         with open(image_path, "wb") as f:
             f.write(request.data)
-        print(f"📷 Imagen guardada en {image_path}")
         return "OK", 200
-    else:
-        return "No image data", 400
+    return "No image data", 400
 
 @app.route("/video_feed")
 def video_feed():
     return Response(
         mjpeg_generator(),
-        mimetype="multipart/x-mixed-replace; boundary=--frame",
-        headers={
-            "Cache-Control": "no-cache, no-store, must-revalidate",
-            "Pragma": "no-cache",
-            "Expires": "0"
-        }
+        mimetype="multipart/x-mixed-replace; boundary=frame"
     )
 
 @app.route("/")
@@ -50,4 +42,4 @@ def index():
     return render_template("index.html")
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5000)
